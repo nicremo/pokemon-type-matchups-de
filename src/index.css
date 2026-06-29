@@ -167,8 +167,28 @@ body {
   --card-spacing: 1.25rem;
 }
 
+.search-card-compact {
+  --card-spacing: 0.875rem;
+}
+
+.search-card-compact [data-slot="command-list"] {
+  max-height: 11rem;
+}
+
+.search-card-compact [data-slot="command-input-wrapper"] {
+  padding: 0.5rem;
+}
+
+.search-card-compact [data-slot="input-group"] {
+  min-height: 2.625rem;
+}
+
 @media (min-width: 640px) {
   .search-card {
     --card-spacing: 1.5rem;
+  }
+
+  .search-card-compact {
+    --card-spacing: 1rem;
   }
 }

@@ -3,8 +3,8 @@ import {
   AlertCircleIcon,
   ArrowUpRightIcon,
   BadgeInfoIcon,
-  CheckCircle2Icon,
   ExternalLinkIcon,
+  Globe2Icon,
   LoaderCircleIcon,
   SearchIcon,
   ShieldIcon,
@@ -33,7 +33,6 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
 } from "@/components/ui/command"
 import {
   Dialog,
@@ -44,7 +43,6 @@ import {
 } from "@/components/ui/dialog"
 import {
   Empty,
-  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
@@ -56,7 +54,6 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field"
-import { InputGroup, InputGroupAddon } from "@/components/ui/input-group"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import {
@@ -78,12 +75,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 
 type PokemonType =
@@ -191,7 +182,7 @@ type RelatedItem = {
   key: string
   label: string
   helper: string
-  kind: "Entwicklung" | "Form" | "Shiny"
+  kind: "evolution" | "form" | "shiny"
   image: string | null
   actionName?: string
 }
@@ -228,6 +219,260 @@ type RouteTarget =
 
 type SearchOptions = {
   push?: boolean
+}
+
+type Lang = "de" | "en"
+
+type Copy = {
+  appTitle: string
+  appSubtitle: string
+  searchTitle: string
+  searchLabel: string
+  searchPlaceholder: string
+  searchEmpty: string
+  searchAction: string
+  pokemonSuggestion: string
+  typeSuggestion: string
+  searchErrorTitle: string
+  searchErrorText: string
+  loadingIndexError: string
+  noMatchToast: string
+  details: string
+  detailSheetTitle: string
+  detailSheetDescription: string
+  profile: string
+  nationalId: string
+  englishName: string
+  germanName: string
+  route: string
+  dataSource: string
+  defensiveProfile: string
+  relatedOverview: string
+  relatedEmptyTitle: string
+  relatedEmptyText: string
+  noRelatedCompact: string
+  tabsGroups: string
+  tabsTable: string
+  tabsRelated: string
+  tableMultiplier: string
+  tableType: string
+  tableMeaning: string
+  noRowsInGroup: string
+  directAnswer: string
+  directAnswerDescription: string
+  attackTypes: string
+  immunities: string
+  hits: string
+  hit: string
+  none: string
+  asAttack: string
+  attackDescription: (type: string) => string
+  shortSummary: string
+  typeComparison: (type: string) => string
+  noImmunity: string
+  emptyTitle: string
+  emptyText: string
+  open: string
+  forms: string
+  evolutions: string
+  shiny: string
+  standardForm: string
+  alternativeForm: string
+  evolutionLine: string
+  shinyVariant: string
+  pokemonId: (id: number) => string
+  api: string
+  reference: string
+  typeCount: (count: number) => string
+}
+
+const COPY: Record<Lang, Copy> = {
+  de: {
+    appTitle: "Pokemon Type Matchups",
+    appSubtitle: "Primär Deutsch, mit englischen Namen, Typ-Alias, Tippfehlern und Formen.",
+    searchTitle: "Direkte Suche",
+    searchLabel: "Suche",
+    searchPlaceholder: "Glurak, Charizard, Feuer, psychp...",
+    searchEmpty: "Kein Vorschlag gefunden.",
+    searchAction: "Prüfen",
+    pokemonSuggestion: "Pokémon",
+    typeSuggestion: "Typ",
+    searchErrorTitle: "Suche fehlgeschlagen",
+    searchErrorText: "Ich konnte dazu kein Pokémon oder keinen Typ finden.",
+    loadingIndexError: "Namensindex konnte nicht geladen werden.",
+    noMatchToast: "Keine passende Suche gefunden.",
+    details: "Details",
+    detailSheetTitle: "Profil",
+    detailSheetDescription: "Identität, Quellen und verwandte Einträge.",
+    profile: "Profil",
+    nationalId: "National Dex",
+    englishName: "Englischer Name",
+    germanName: "Deutscher Name",
+    route: "Route",
+    dataSource: "Quelle",
+    defensiveProfile: "Defensives Profil",
+    relatedOverview: "Weitere Einträge",
+    relatedEmptyTitle: "Keine weiteren Formen gefunden",
+    relatedEmptyText: "PokeAPI meldet für dieses Pokémon keine weiteren Varianten.",
+    noRelatedCompact: "Keine weiteren Einträge.",
+    tabsGroups: "Gruppen",
+    tabsTable: "Tabelle",
+    tabsRelated: "Weitere",
+    tableMultiplier: "Multiplikator",
+    tableType: "Typ",
+    tableMeaning: "Einordnung",
+    noRowsInGroup: "Keine Treffer in dieser Gruppe.",
+    directAnswer: "Direkte Antwort",
+    directAnswerDescription: "Beste Angriffs-Typen gegen dieses Pokémon.",
+    attackTypes: "starke Angriffs-Typen",
+    immunities: "Immunitäten",
+    hits: "Treffer",
+    hit: "Treffer",
+    none: "Keine.",
+    asAttack: "als Angriff",
+    attackDescription: (type) => `So wirkt ${type} gegen jeden verteidigenden Einzeltyp.`,
+    shortSummary: "Kurzfassung",
+    typeComparison: (type) => `${type} im Typenvergleich.`,
+    noImmunity: "Keine Immunität.",
+    emptyTitle: "Starte mit einer Suche",
+    emptyText: "Gib ein Pokémon oder einen Typ ein, um die Effektivität zu sehen.",
+    open: "Öffnen",
+    forms: "Formen",
+    evolutions: "Entwicklungen",
+    shiny: "Shiny",
+    standardForm: "Standardform",
+    alternativeForm: "Alternative Form",
+    evolutionLine: "Entwicklungslinie",
+    shinyVariant: "Shiny Variante",
+    pokemonId: (id) => `Pokémon ID ${id}`,
+    api: "API",
+    reference: "Referenz",
+    typeCount: (count) => `${count} Typen`,
+  },
+  en: {
+    appTitle: "Pokemon Type Matchups",
+    appSubtitle: "German and English search with type aliases, typo handling and forms.",
+    searchTitle: "Search",
+    searchLabel: "Search",
+    searchPlaceholder: "Charizard, Glurak, fire, psychp...",
+    searchEmpty: "No suggestion found.",
+    searchAction: "Check",
+    pokemonSuggestion: "Pokemon",
+    typeSuggestion: "Type",
+    searchErrorTitle: "Search failed",
+    searchErrorText: "I could not find a matching Pokemon or type.",
+    loadingIndexError: "Name index could not be loaded.",
+    noMatchToast: "No matching search result found.",
+    details: "Details",
+    detailSheetTitle: "Profile",
+    detailSheetDescription: "Identity, sources and related entries.",
+    profile: "Profile",
+    nationalId: "National Dex",
+    englishName: "English name",
+    germanName: "German name",
+    route: "Route",
+    dataSource: "Source",
+    defensiveProfile: "Defensive profile",
+    relatedOverview: "Related entries",
+    relatedEmptyTitle: "No additional forms found",
+    relatedEmptyText: "PokeAPI does not list additional variants for this Pokemon.",
+    noRelatedCompact: "No related entries.",
+    tabsGroups: "Groups",
+    tabsTable: "Table",
+    tabsRelated: "Related",
+    tableMultiplier: "Multiplier",
+    tableType: "Type",
+    tableMeaning: "Meaning",
+    noRowsInGroup: "No matches in this group.",
+    directAnswer: "Direct answer",
+    directAnswerDescription: "Best attacking types against this Pokemon.",
+    attackTypes: "strong attacking types",
+    immunities: "immunities",
+    hits: "matches",
+    hit: "match",
+    none: "None.",
+    asAttack: "as attack",
+    attackDescription: (type) => `How ${type} performs against every single defending type.`,
+    shortSummary: "Summary",
+    typeComparison: (type) => `${type} in type comparison.`,
+    noImmunity: "No immunity.",
+    emptyTitle: "Start with a search",
+    emptyText: "Enter a Pokemon or type to see effectiveness.",
+    open: "Open",
+    forms: "Forms",
+    evolutions: "Evolutions",
+    shiny: "Shiny",
+    standardForm: "Default form",
+    alternativeForm: "Alternative form",
+    evolutionLine: "Evolution line",
+    shinyVariant: "Shiny variant",
+    pokemonId: (id) => `Pokemon ID ${id}`,
+    api: "API",
+    reference: "Reference",
+    typeCount: (count) => `${count} types`,
+  },
+}
+
+const TYPE_LABELS: Record<Lang, Record<PokemonType, string>> = {
+  de: {
+    normal: "Normal",
+    fire: "Feuer",
+    water: "Wasser",
+    electric: "Elektro",
+    grass: "Pflanze",
+    ice: "Eis",
+    fighting: "Kampf",
+    poison: "Gift",
+    ground: "Boden",
+    flying: "Flug",
+    psychic: "Psycho",
+    bug: "Käfer",
+    rock: "Gestein",
+    ghost: "Geist",
+    dragon: "Drache",
+    dark: "Unlicht",
+    steel: "Stahl",
+    fairy: "Fee",
+  },
+  en: {
+    normal: "Normal",
+    fire: "Fire",
+    water: "Water",
+    electric: "Electric",
+    grass: "Grass",
+    ice: "Ice",
+    fighting: "Fighting",
+    poison: "Poison",
+    ground: "Ground",
+    flying: "Flying",
+    psychic: "Psychic",
+    bug: "Bug",
+    rock: "Rock",
+    ghost: "Ghost",
+    dragon: "Dragon",
+    dark: "Dark",
+    steel: "Steel",
+    fairy: "Fairy",
+  },
+}
+
+const MULTIPLIER_DESCRIPTION: Record<Lang, Record<number, string>> = {
+  de: {
+    4: "extrem stark",
+    2: "sehr effektiv",
+    1: "neutral",
+    0.5: "wenig effektiv",
+    0.25: "sehr schwach",
+    0: "keine Wirkung",
+  },
+  en: {
+    4: "extremely strong",
+    2: "super effective",
+    1: "neutral",
+    0.5: "not very effective",
+    0.25: "very weak",
+    0: "no effect",
+  },
 }
 
 const TYPE_ORDER: PokemonType[] = [
@@ -524,6 +769,36 @@ function typePath(type: PokemonType) {
   return `/typ/${toPageSlug(TYPE_META[type].label)}`
 }
 
+function getTypeLabel(type: PokemonType, lang: Lang) {
+  return TYPE_LABELS[lang][type]
+}
+
+function getMultiplierDescription(value: number, lang: Lang) {
+  return MULTIPLIER_DESCRIPTION[lang][value] ?? ""
+}
+
+function getInitialLang(): Lang {
+  if (typeof window === "undefined") return "de"
+  const stored = window.localStorage.getItem("pokedex-lang")
+  if (stored === "de" || stored === "en") return stored
+  return "de"
+}
+
+function getRelatedKindLabel(kind: RelatedItem["kind"], t: Copy) {
+  if (kind === "evolution") return t.evolutions
+  if (kind === "form") return t.forms
+  return t.shiny
+}
+
+function localizeRelatedHelper(helper: string, t: Copy) {
+  if (helper === "Standardform") return t.standardForm
+  if (helper === "Alternative Form") return t.alternativeForm
+  if (helper === "Entwicklungslinie") return t.evolutionLine
+  if (helper === "Shiny Variante") return t.shinyVariant
+  const idMatch = helper.match(/^Pokémon ID (\d+)$/)
+  return idMatch ? t.pokemonId(Number(idMatch[1])) : helper
+}
+
 function parseRoute(pathname: string): RouteTarget {
   const [, section, rawValue] = pathname.split("/")
   const decoded = decodeURIComponent(rawValue ?? "")
@@ -694,7 +969,7 @@ function getTypeFromInput(input: string) {
   return Number.isFinite(best.score) ? best.type : null
 }
 
-function makeSuggestions(input: string, names: PokemonNameEntry[]): Suggestion[] {
+function makeSuggestions(input: string, names: PokemonNameEntry[], lang: Lang): Suggestion[] {
   const normalized = normalize(input)
   if (!normalized) return []
 
@@ -705,8 +980,8 @@ function makeSuggestions(input: string, names: PokemonNameEntry[]): Suggestion[]
     return {
       kind: "type" as const,
       value: type,
-      label: meta.label,
-      helper: `Typ ${type}`,
+      label: getTypeLabel(type, lang),
+      helper: COPY[lang].typeSuggestion,
       score,
     }
   })
@@ -723,7 +998,7 @@ function makeSuggestions(input: string, names: PokemonNameEntry[]): Suggestion[]
 
   for (const entry of names) {
     const score = scoreText(normalized, entry.normalized)
-    const helper = entry.language === "de" ? "Pokémon" : "Pokemon"
+    const helper = COPY[lang].pokemonSuggestion
     const current = deduped.get(entry.id)
 
     if (!current || score < current.score) {
@@ -748,7 +1023,7 @@ function makeSuggestions(input: string, names: PokemonNameEntry[]): Suggestion[]
 
   return [...typeSuggestions, ...pokemonSuggestions]
     .filter((entry) => Number.isFinite(entry.score) && entry.score <= 4.5)
-    .sort((a, b) => a.score - b.score || a.label.localeCompare(b.label, "de"))
+    .sort((a, b) => a.score - b.score || a.label.localeCompare(b.label, lang))
     .slice(0, 9)
 }
 
@@ -856,7 +1131,7 @@ async function getRelatedItems(pokemon: ApiPokemon, species: ApiSpecies) {
         key: variety.pokemon.name,
         label: display,
         helper: variety.is_default ? "Standardform" : "Alternative Form",
-        kind: "Form",
+        kind: "form",
         image: defaultImage,
         actionName: variety.pokemon.name,
       })
@@ -869,7 +1144,7 @@ async function getRelatedItems(pokemon: ApiPokemon, species: ApiSpecies) {
         key: shinyKey,
         label: `Shiny ${display}`,
         helper: pokemonId ? `Pokémon ID ${pokemonId}` : "Shiny Variante",
-        kind: "Shiny",
+        kind: "shiny",
         image: shinyImage,
         actionName: variety.pokemon.name,
       })
@@ -889,7 +1164,7 @@ async function getRelatedItems(pokemon: ApiPokemon, species: ApiSpecies) {
       key: `evolution-${item.id}`,
       label: getSpeciesDisplayName(evoSpecies),
       helper: "Entwicklungslinie",
-      kind: "Entwicklung",
+      kind: "evolution",
       image: evoPokemon ? getSprite(evoPokemon) : null,
       actionName: defaultVariety?.pokemon.name ?? item.name,
     })
@@ -933,7 +1208,7 @@ async function resolvePokemon(input: string | number, names: PokemonNameEntry[])
   }
 }
 
-function TypeBadge({ type, subtle = false }: { type: PokemonType; subtle?: boolean }) {
+function TypeBadge({ type, subtle = false, lang }: { type: PokemonType; subtle?: boolean; lang: Lang }) {
   const meta = TYPE_META[type]
 
   return (
@@ -949,7 +1224,7 @@ function TypeBadge({ type, subtle = false }: { type: PokemonType; subtle?: boole
             }
       }
     >
-      {meta.label}
+      {getTypeLabel(type, lang)}
     </Badge>
   )
 }
@@ -981,14 +1256,14 @@ function SuggestionIcon({ suggestion }: { suggestion: Suggestion }) {
   )
 }
 
-function EffectivenessTable({ rows }: { rows: EffectivenessRow[] }) {
+function EffectivenessTable({ rows, lang, t }: { rows: EffectivenessRow[]; lang: Lang; t: Copy }) {
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Multiplikator</TableHead>
-          <TableHead>Typ</TableHead>
-          <TableHead className="hidden sm:table-cell">Einordnung</TableHead>
+          <TableHead>{t.tableMultiplier}</TableHead>
+          <TableHead>{t.tableType}</TableHead>
+          <TableHead className="hidden sm:table-cell">{t.tableMeaning}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -998,10 +1273,10 @@ function EffectivenessTable({ rows }: { rows: EffectivenessRow[] }) {
               <MultiplierBadge value={row.multiplier} />
             </TableCell>
             <TableCell>
-              <TypeBadge type={row.type} />
+              <TypeBadge type={row.type} lang={lang} />
             </TableCell>
             <TableCell className="hidden text-muted-foreground sm:table-cell">
-              {row.description}
+              {getMultiplierDescription(row.multiplier, lang)}
             </TableCell>
           </TableRow>
         ))}
@@ -1010,7 +1285,7 @@ function EffectivenessTable({ rows }: { rows: EffectivenessRow[] }) {
   )
 }
 
-function GroupedEffectiveness({ rows }: { rows: EffectivenessRow[] }) {
+function GroupedEffectiveness({ rows, lang, t }: { rows: EffectivenessRow[]; lang: Lang; t: Copy }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {groupRows(rows).map((group) => (
@@ -1018,19 +1293,19 @@ function GroupedEffectiveness({ rows }: { rows: EffectivenessRow[] }) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MultiplierBadge value={group.multiplier} />
-              {MULTIPLIER_COPY[group.multiplier].description}
+              {getMultiplierDescription(group.multiplier, lang)}
             </CardTitle>
-            <CardDescription>{group.rows.length} Typen</CardDescription>
+            <CardDescription>{t.typeCount(group.rows.length)}</CardDescription>
           </CardHeader>
           <CardContent>
             {group.rows.length ? (
               <div className="flex flex-wrap gap-2">
                 {group.rows.map((row) => (
-                  <TypeBadge key={row.type} type={row.type} />
+                  <TypeBadge key={row.type} type={row.type} lang={lang} />
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">Keine Treffer in dieser Gruppe.</p>
+              <p className="text-sm text-muted-foreground">{t.noRowsInGroup}</p>
             )}
           </CardContent>
         </Card>
@@ -1083,9 +1358,11 @@ function ResultSkeleton() {
 function RelatedGrid({
   items,
   onSelect,
+  t,
 }: {
   items: RelatedItem[]
   onSelect: (item: RelatedItem) => void
+  t: Copy
 }) {
   if (!items.length) {
     return (
@@ -1094,10 +1371,8 @@ function RelatedGrid({
           <EmptyMedia variant="icon">
             <BadgeInfoIcon />
           </EmptyMedia>
-          <EmptyTitle>Keine weiteren Formen gefunden</EmptyTitle>
-          <EmptyDescription>
-            PokeAPI meldet für dieses Pokémon keine weiteren Varianten.
-          </EmptyDescription>
+          <EmptyTitle>{t.relatedEmptyTitle}</EmptyTitle>
+          <EmptyDescription>{t.relatedEmptyText}</EmptyDescription>
         </EmptyHeader>
       </Empty>
     )
@@ -1119,8 +1394,8 @@ function RelatedGrid({
           <span className="grid min-w-0 gap-1">
             <span className="truncate text-sm font-medium">{item.label}</span>
             <span className="flex flex-wrap gap-1">
-              <Badge variant="secondary">{item.kind}</Badge>
-              <span className="text-xs text-muted-foreground">{item.helper}</span>
+              <Badge variant="secondary">{getRelatedKindLabel(item.kind, t)}</Badge>
+              <span className="text-xs text-muted-foreground">{localizeRelatedHelper(item.helper, t)}</span>
             </span>
           </span>
           <ArrowUpRightIcon className="ml-auto opacity-0 transition group-hover:opacity-100" />
@@ -1133,9 +1408,13 @@ function RelatedGrid({
 function PokemonHero({
   result,
   onRelatedSelect,
+  lang,
+  t,
 }: {
   result: PokemonResult
   onRelatedSelect: (item: RelatedItem) => void
+  lang: Lang
+  t: Copy
 }) {
   const types = result.pokemon.types
     .sort((a, b) => a.slot - b.slot)
@@ -1143,6 +1422,13 @@ function PokemonHero({
   const sprite = getSprite(result.pokemon)
   const strongCount = result.rows.filter((row) => row.multiplier >= 2).length
   const immuneCount = result.rows.filter((row) => row.multiplier === 0).length
+  const profileRows = [
+    [t.nationalId, `#${result.pokemon.id}`],
+    [t.germanName, result.displayName],
+    [t.englishName, result.englishName],
+    [t.route, pokemonPath(result)],
+    [t.dataSource, "PokeAPI"],
+  ]
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -1150,18 +1436,18 @@ function PokemonHero({
         <CardHeader className="gap-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-center gap-3">
-              <Avatar className="size-16 rounded-xl border bg-muted">
+              <Avatar className="size-20 rounded-xl border bg-muted sm:size-24">
                 <AvatarImage src={sprite ?? undefined} alt="" />
                 <AvatarFallback>{result.displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
               <div className="grid gap-1">
-                <CardTitle className="text-xl">{result.displayName}</CardTitle>
+                <CardTitle className="text-2xl">{result.displayName}</CardTitle>
                 <CardDescription>
-                  {result.englishName} · #{result.pokemon.id}
+                  {result.englishName}, #{result.pokemon.id}
                 </CardDescription>
                 <div className="flex flex-wrap gap-2">
                   {types.map((type) => (
-                    <TypeBadge key={type} type={type} />
+                    <TypeBadge key={type} type={type} lang={lang} />
                   ))}
                 </div>
               </div>
@@ -1170,27 +1456,106 @@ function PokemonHero({
               <SheetTrigger asChild>
                 <Button variant="outline">
                   <BadgeInfoIcon data-icon="inline-start" />
-                  Details
+                  {t.details}
                 </Button>
               </SheetTrigger>
               <SheetContent className="w-full sm:max-w-lg">
                 <SheetHeader>
-                  <SheetTitle>{result.displayName}</SheetTitle>
-                  <SheetDescription>
-                    Typen, Multiplikatoren und weitere Formen kompakt geprüft.
-                  </SheetDescription>
+                  <SheetTitle>{t.detailSheetTitle}</SheetTitle>
+                  <SheetDescription>{t.detailSheetDescription}</SheetDescription>
                 </SheetHeader>
                 <ScrollArea className="min-h-0 flex-1 px-4 pb-4">
-                  <div className="grid gap-4">
+                  <div className="grid gap-5">
+                    <div className="flex items-center gap-4 rounded-lg border bg-muted/30 p-4">
+                      <Avatar className="size-24 rounded-xl border bg-background">
+                        <AvatarImage src={sprite ?? undefined} alt="" />
+                        <AvatarFallback>{result.displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div className="grid gap-2">
+                        <div>
+                          <h3 className="font-semibold leading-none">{result.displayName}</h3>
+                          <p className="mt-1 text-sm text-muted-foreground">{result.englishName}</p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {types.map((type) => (
+                            <TypeBadge key={type} type={type} lang={lang} />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-2">
+                      <h4 className="text-sm font-medium">{t.profile}</h4>
+                      <div className="rounded-lg border">
+                        {profileRows.map(([label, value]) => (
+                          <div
+                            key={label}
+                            className="grid grid-cols-[120px_minmax(0,1fr)] gap-3 border-b p-3 text-sm last:border-b-0"
+                          >
+                            <span className="text-muted-foreground">{label}</span>
+                            <span className="min-w-0 break-words font-medium">{value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="grid gap-2">
+                      <h4 className="text-sm font-medium">{t.defensiveProfile}</h4>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[4, 2, 0].map((value) => {
+                          const rows = result.rows.filter((row) => row.multiplier === value)
+                          return (
+                            <div key={value} className="rounded-lg border p-3">
+                              <MultiplierBadge value={value} />
+                              <p className="mt-2 text-2xl font-semibold">{rows.length}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {rows.length === 1 ? t.hit : t.hits}
+                              </p>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    <div className="grid gap-3">
+                      <h4 className="text-sm font-medium">{t.relatedOverview}</h4>
+                      {result.related.length ? (
+                        <div className="grid gap-2">
+                          {result.related.slice(0, 8).map((item) => (
+                            <button
+                              key={item.key}
+                              type="button"
+                              className="flex items-center gap-3 rounded-lg border p-3 text-left transition hover:bg-muted focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                              onClick={() => onRelatedSelect(item)}
+                            >
+                              <Avatar className="size-10 rounded-md border bg-background">
+                                <AvatarImage src={item.image ?? undefined} alt="" />
+                                <AvatarFallback>{item.label.slice(0, 2).toUpperCase()}</AvatarFallback>
+                              </Avatar>
+                              <span className="min-w-0 flex-1">
+                                <span className="block truncate text-sm font-medium">{item.label}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {getRelatedKindLabel(item.kind, t)}, {localizeRelatedHelper(item.helper, t)}
+                                </span>
+                              </span>
+                              <ArrowUpRightIcon className="size-4 text-muted-foreground" />
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">{t.noRelatedCompact}</p>
+                      )}
+                    </div>
+
                     <div className="flex flex-wrap gap-2">
                       {types.map((type) => (
-                        <TypeBadge key={type} type={type} />
+                        <Button key={type} variant="outline" size="sm" asChild>
+                          <a href={typePath(type)}>{getTypeLabel(type, lang)}</a>
+                        </Button>
                       ))}
                     </div>
-                    <Separator />
-                    <GroupedEffectiveness rows={result.rows} />
-                    <Separator />
-                    <RelatedGrid items={result.related} onSelect={onRelatedSelect} />
                   </div>
                 </ScrollArea>
               </SheetContent>
@@ -1202,35 +1567,35 @@ function PokemonHero({
             <TabsList>
               <TabsTrigger value="gruppen">
                 <ShieldIcon data-icon="inline-start" />
-                Gruppen
+                {t.tabsGroups}
               </TabsTrigger>
               <TabsTrigger value="tabelle">
                 <SwordsIcon data-icon="inline-start" />
-                Tabelle
+                {t.tabsTable}
               </TabsTrigger>
               <TabsTrigger value="weitere">
                 <SparklesIcon data-icon="inline-start" />
-                Weitere
+                {t.tabsRelated}
               </TabsTrigger>
             </TabsList>
             <TabsContent value="gruppen" className="pt-4">
-              <GroupedEffectiveness rows={result.rows} />
+              <GroupedEffectiveness rows={result.rows} lang={lang} t={t} />
             </TabsContent>
             <TabsContent value="tabelle" className="pt-4">
-              <EffectivenessTable rows={result.rows} />
+              <EffectivenessTable rows={result.rows} lang={lang} t={t} />
             </TabsContent>
             <TabsContent value="weitere" className="pt-4">
-              <RelatedGrid items={result.related} onSelect={onRelatedSelect} />
+              <RelatedGrid items={result.related} onSelect={onRelatedSelect} t={t} />
             </TabsContent>
           </Tabs>
         </CardContent>
         <CardFooter className="justify-between gap-3">
           <span className="text-sm text-muted-foreground">
-            {strongCount} starke Angriffs-Typen, {immuneCount} Immunitäten.
+            {strongCount} {t.attackTypes}, {immuneCount} {t.immunities}.
           </span>
           <Button variant="ghost" size="sm" asChild>
             <a href={`https://pokeapi.co/api/v2/pokemon/${result.pokemon.id}`} target="_blank" rel="noreferrer">
-              API
+              {t.api}
               <ExternalLinkIcon data-icon="inline-end" />
             </a>
           </Button>
@@ -1239,8 +1604,8 @@ function PokemonHero({
 
       <Card>
         <CardHeader>
-          <CardTitle>Direkte Antwort</CardTitle>
-          <CardDescription>Beste Angriffs-Typen gegen dieses Pokémon.</CardDescription>
+          <CardTitle>{t.directAnswer}</CardTitle>
+          <CardDescription>{t.directAnswerDescription}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
           {[4, 2, 0].map((value) => {
@@ -1249,13 +1614,15 @@ function PokemonHero({
               <div key={value} className="grid gap-2">
                 <div className="flex items-center justify-between gap-3">
                   <MultiplierBadge value={value} />
-                  <span className="text-xs text-muted-foreground">{rows.length} Treffer</span>
+                  <span className="text-xs text-muted-foreground">
+                    {rows.length} {rows.length === 1 ? t.hit : t.hits}
+                  </span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {rows.length ? (
-                    rows.map((row) => <TypeBadge key={row.type} type={row.type} />)
+                    rows.map((row) => <TypeBadge key={row.type} type={row.type} lang={lang} />)
                   ) : (
-                    <span className="text-sm text-muted-foreground">Keine.</span>
+                    <span className="text-sm text-muted-foreground">{t.none}</span>
                   )}
                 </div>
               </div>
@@ -1267,8 +1634,8 @@ function PokemonHero({
   )
 }
 
-function TypeHero({ result }: { result: TypeResult }) {
-  const meta = TYPE_META[result.attackType]
+function TypeHero({ result, lang, t }: { result: TypeResult; lang: Lang; t: Copy }) {
+  const typeLabel = getTypeLabel(result.attackType, lang)
   const superEffective = result.rows.filter((row) => row.multiplier === 2)
   const noEffect = result.rows.filter((row) => row.multiplier === 0)
 
@@ -1277,39 +1644,37 @@ function TypeHero({ result }: { result: TypeResult }) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <TypeBadge type={result.attackType} />
-            als Angriff
+            <TypeBadge type={result.attackType} lang={lang} />
+            {t.asAttack}
           </CardTitle>
-          <CardDescription>
-            So wirkt {meta.label} gegen jeden verteidigenden Einzeltyp.
-          </CardDescription>
+          <CardDescription>{t.attackDescription(typeLabel)}</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="gruppen" className="gap-4">
             <TabsList>
-              <TabsTrigger value="gruppen">Gruppen</TabsTrigger>
-              <TabsTrigger value="tabelle">Tabelle</TabsTrigger>
+              <TabsTrigger value="gruppen">{t.tabsGroups}</TabsTrigger>
+              <TabsTrigger value="tabelle">{t.tabsTable}</TabsTrigger>
             </TabsList>
             <TabsContent value="gruppen" className="pt-4">
-              <GroupedEffectiveness rows={result.rows} />
+              <GroupedEffectiveness rows={result.rows} lang={lang} t={t} />
             </TabsContent>
             <TabsContent value="tabelle" className="pt-4">
-              <EffectivenessTable rows={result.rows} />
+              <EffectivenessTable rows={result.rows} lang={lang} t={t} />
             </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Kurzfassung</CardTitle>
-          <CardDescription>{meta.label} im Typenvergleich.</CardDescription>
+          <CardTitle>{t.shortSummary}</CardTitle>
+          <CardDescription>{t.typeComparison(typeLabel)}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="grid gap-2">
             <MultiplierBadge value={2} />
             <div className="flex flex-wrap gap-2">
               {superEffective.map((row) => (
-                <TypeBadge key={row.type} type={row.type} />
+                <TypeBadge key={row.type} type={row.type} lang={lang} />
               ))}
             </div>
           </div>
@@ -1317,9 +1682,9 @@ function TypeHero({ result }: { result: TypeResult }) {
             <MultiplierBadge value={0} />
             <div className="flex flex-wrap gap-2">
               {noEffect.length ? (
-                noEffect.map((row) => <TypeBadge key={row.type} type={row.type} />)
+                noEffect.map((row) => <TypeBadge key={row.type} type={row.type} lang={lang} />)
               ) : (
-                <span className="text-sm text-muted-foreground">Keine Immunität.</span>
+                <span className="text-sm text-muted-foreground">{t.noImmunity}</span>
               )}
             </div>
           </div>
@@ -1330,6 +1695,7 @@ function TypeHero({ result }: { result: TypeResult }) {
 }
 
 export default function App() {
+  const [lang, setLang] = useState<Lang>(() => getInitialLang())
   const [query, setQuery] = useState("Glurak")
   const [names, setNames] = useState<PokemonNameEntry[]>([])
   const [namesLoading, setNamesLoading] = useState(true)
@@ -1338,7 +1704,28 @@ export default function App() {
   const [error, setError] = useState<string | null>(null)
   const [selectedRelated, setSelectedRelated] = useState<RelatedItem | null>(null)
 
-  const suggestions = useMemo(() => makeSuggestions(query, names), [query, names])
+  const t = COPY[lang]
+  const suggestions = useMemo(() => makeSuggestions(query, names, lang), [query, names, lang])
+  const displayedSuggestions = result ? suggestions.slice(0, 3) : suggestions
+
+  useEffect(() => {
+    window.localStorage.setItem("pokedex-lang", lang)
+  }, [lang])
+
+  useEffect(() => {
+    if (!result) {
+      document.title = t.appTitle
+      return
+    }
+
+    if (result.mode === "pokemon") {
+      document.title = lang === "de" ? `${result.displayName} Effektivität` : `${result.displayName} Matchups`
+      return
+    }
+
+    const typeLabel = getTypeLabel(result.attackType, lang)
+    document.title = lang === "de" ? `${typeLabel} Effektivität` : `${typeLabel} Matchups`
+  }, [lang, result, t.appTitle])
 
   function commitResult(nextResult: AppResult, nextQuery: string, options: SearchOptions = {}) {
     setResult(nextResult)
@@ -1346,14 +1733,16 @@ export default function App() {
     setError(null)
 
     if (nextResult.mode === "pokemon") {
-      document.title = `${nextResult.displayName} Effektivität`
+      document.title =
+        lang === "de" ? `${nextResult.displayName} Effektivität` : `${nextResult.displayName} Matchups`
       if (options.push !== false) {
         writePagePath(pokemonPath(nextResult))
       }
       return
     }
 
-    document.title = `${TYPE_META[nextResult.attackType].label} Effektivität`
+    const typeLabel = getTypeLabel(nextResult.attackType, lang)
+    document.title = lang === "de" ? `${typeLabel} Effektivität` : `${typeLabel} Matchups`
     if (options.push !== false) {
       writePagePath(typePath(nextResult.attackType))
     }
@@ -1367,7 +1756,7 @@ export default function App() {
           attackType: route.value,
           rows: makeRowsForAttackType(route.value),
         },
-        TYPE_META[route.value].label,
+        getTypeLabel(route.value, lang),
         options,
       )
       return
@@ -1389,7 +1778,7 @@ export default function App() {
         setNames(entries)
       })
       .catch(() => {
-        toast.error("Namensindex konnte nicht geladen werden.")
+        toast.error(t.loadingIndexError)
       })
       .finally(() => {
         if (active) {
@@ -1400,7 +1789,7 @@ export default function App() {
     return () => {
       active = false
     }
-  }, [])
+  }, [t.loadingIndexError])
 
   useEffect(() => {
     if (!namesLoading && names.length && !result) {
@@ -1423,7 +1812,7 @@ export default function App() {
 
     setLoading(true)
     setError(null)
-    const localSuggestions = makeSuggestions(trimmed, names)
+    const localSuggestions = makeSuggestions(trimmed, names, lang)
 
     try {
       if (suggestion?.kind === "type") {
@@ -1431,7 +1820,7 @@ export default function App() {
           mode: "type",
           attackType: suggestion.value,
           rows: makeRowsForAttackType(suggestion.value),
-        }, TYPE_META[suggestion.value].label, options)
+        }, getTypeLabel(suggestion.value, lang), options)
         return
       }
 
@@ -1450,7 +1839,7 @@ export default function App() {
           mode: "type",
           attackType: type,
           rows: makeRowsForAttackType(type),
-        }, TYPE_META[type].label, options)
+        }, getTypeLabel(type, lang), options)
         return
       }
 
@@ -1466,7 +1855,7 @@ export default function App() {
             mode: "type",
             attackType: firstSuggestion.value,
             rows: makeRowsForAttackType(firstSuggestion.value),
-          }, TYPE_META[firstSuggestion.value].label, options)
+          }, getTypeLabel(firstSuggestion.value, lang), options)
           return
         }
 
@@ -1478,8 +1867,8 @@ export default function App() {
       const pokemonResult = await resolvePokemon(trimmed, names)
       commitResult(pokemonResult, pokemonResult.displayName, options)
     } catch {
-      setError("Ich konnte dazu kein Pokémon oder keinen Typ finden.")
-      toast.error("Keine passende Suche gefunden.")
+      setError(t.searchErrorText)
+      toast.error(t.noMatchToast)
     } finally {
       setLoading(false)
     }
@@ -1493,7 +1882,7 @@ export default function App() {
   }
 
   return (
-    <TooltipProvider>
+    <>
       <div className="min-h-svh bg-background text-foreground">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
           <header className="flex flex-col gap-4 border-b pb-6 md:flex-row md:items-center md:justify-between">
@@ -1502,25 +1891,28 @@ export default function App() {
                 <SwordsIcon />
               </div>
               <div>
-                <h1 className="text-2xl font-semibold tracking-tight">Pokemon Type Matchups</h1>
-                <p className="text-sm text-muted-foreground">
-                  Primär Deutsch, mit englischen Namen, Typ-Alias, Tippfehlern und Formen.
-                </p>
+                <h1 className="text-2xl font-semibold tracking-tight">{t.appTitle}</h1>
+                <p className="text-sm text-muted-foreground">{t.appSubtitle}</p>
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Badge variant="secondary" className="gap-1">
-                    <CheckCircle2Icon />
-                    shadcn/ui
-                  </Badge>
-                </TooltipTrigger>
-                <TooltipContent>Echte shadcn Komponenten, lokal im Projekt.</TooltipContent>
-              </Tooltip>
+              <div className="flex items-center gap-1 rounded-lg border p-1">
+                <Globe2Icon className="ml-2 size-4 text-muted-foreground" />
+                {(["de", "en"] as const).map((option) => (
+                  <Button
+                    key={option}
+                    variant={lang === option ? "secondary" : "ghost"}
+                    size="sm"
+                    className="h-8 px-3"
+                    onClick={() => setLang(option)}
+                  >
+                    {option.toUpperCase()}
+                  </Button>
+                ))}
+              </div>
               <Button variant="outline" size="sm" asChild>
                 <a href="https://www.pkmn.help/offense/single/" target="_blank" rel="noreferrer">
-                  Referenz
+                  {t.reference}
                   <ExternalLinkIcon data-icon="inline-end" />
                 </a>
               </Button>
@@ -1528,15 +1920,17 @@ export default function App() {
           </header>
 
           <main className="grid gap-8">
-            <Card className="search-card">
-              <CardHeader>
-                <CardTitle className="text-lg">Direkte Suche</CardTitle>
-              </CardHeader>
+            <Card className={cn("search-card", result && "search-card-compact")}>
+              {!result ? (
+                <CardHeader>
+                  <CardTitle className="text-lg">{t.searchTitle}</CardTitle>
+                </CardHeader>
+              ) : null}
               <CardContent>
                 <FieldGroup>
                   <Field>
                     <FieldContent>
-                      <FieldLabel htmlFor="pokemon-search" className="sr-only">Suche</FieldLabel>
+                      <FieldLabel htmlFor="pokemon-search" className="sr-only">{t.searchLabel}</FieldLabel>
                     </FieldContent>
                     <Command
                       shouldFilter={false}
@@ -1544,7 +1938,7 @@ export default function App() {
                       onKeyDown={(event) => {
                         if (event.key === "Enter") {
                           event.preventDefault()
-                          void runSearch(query, suggestions[0])
+                          void runSearch(query, displayedSuggestions[0])
                         }
                       }}
                     >
@@ -1552,12 +1946,12 @@ export default function App() {
                         id="pokemon-search"
                         value={query}
                         onValueChange={setQuery}
-                        placeholder="Glurak, Charizard, Feuer, psychp..."
+                        placeholder={t.searchPlaceholder}
                       />
                       <CommandList>
-                        <CommandEmpty>Kein Vorschlag gefunden.</CommandEmpty>
+                        <CommandEmpty>{t.searchEmpty}</CommandEmpty>
                         <CommandGroup>
-                          {suggestions.map((suggestion) => (
+                          {displayedSuggestions.map((suggestion) => (
                             <CommandItem
                               className="suggestion-row"
                               key={`${suggestion.kind}-${suggestion.value}`}
@@ -1578,9 +1972,9 @@ export default function App() {
                 </FieldGroup>
               </CardContent>
               <CardFooter className="justify-end">
-                <Button disabled={loading} onClick={() => void runSearch(query, suggestions[0])}>
+                <Button disabled={loading} onClick={() => void runSearch(query, displayedSuggestions[0])}>
                   {loading ? <LoaderCircleIcon data-icon="inline-start" className="animate-spin" /> : <SearchIcon data-icon="inline-start" />}
-                  Prüfen
+                  {t.searchAction}
                 </Button>
               </CardFooter>
             </Card>
@@ -1588,26 +1982,18 @@ export default function App() {
             {error && (
               <Alert variant="destructive">
                 <AlertCircleIcon />
-                <AlertTitle>Suche fehlgeschlagen</AlertTitle>
+                <AlertTitle>{t.searchErrorTitle}</AlertTitle>
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-
-            <Alert>
-              <BadgeInfoIcon />
-              <AlertTitle>Datenquelle</AlertTitle>
-              <AlertDescription>
-                Typenlogik ist lokal hinterlegt, Pokémon-Daten und Formen kommen live aus PokeAPI.
-              </AlertDescription>
-            </Alert>
 
             {namesLoading && !result ? <SearchSkeleton /> : null}
             {loading ? (
               <ResultSkeleton />
             ) : result?.mode === "pokemon" ? (
-              <PokemonHero result={result} onRelatedSelect={setSelectedRelated} />
+              <PokemonHero result={result} onRelatedSelect={setSelectedRelated} lang={lang} t={t} />
             ) : result?.mode === "type" ? (
-              <TypeHero result={result} />
+              <TypeHero result={result} lang={lang} t={t} />
             ) : (
               <Card>
                 <CardContent>
@@ -1616,18 +2002,9 @@ export default function App() {
                       <EmptyMedia variant="icon">
                         <SearchIcon />
                       </EmptyMedia>
-                      <EmptyTitle>Starte mit einer Suche</EmptyTitle>
-                      <EmptyDescription>
-                        Gib ein Pokémon oder einen Typ ein, um die Effektivität zu sehen.
-                      </EmptyDescription>
+                      <EmptyTitle>{t.emptyTitle}</EmptyTitle>
+                      <EmptyDescription>{t.emptyText}</EmptyDescription>
                     </EmptyHeader>
-                    <EmptyContent>
-                      <InputGroup>
-                        <InputGroupAddon>
-                          <SearchIcon />
-                        </InputGroupAddon>
-                      </InputGroup>
-                    </EmptyContent>
                   </Empty>
                 </CardContent>
               </Card>
@@ -1648,9 +2025,11 @@ export default function App() {
               <AvatarFallback>{selectedRelated?.label.slice(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
             <div className="grid gap-3">
-              <Badge variant="secondary">{selectedRelated?.kind}</Badge>
+              <Badge variant="secondary">
+                {selectedRelated ? getRelatedKindLabel(selectedRelated.kind, t) : null}
+              </Badge>
               <Button onClick={() => selectedRelated && void runRelated(selectedRelated)}>
-                Öffnen
+                {t.open}
                 <ArrowUpRightIcon data-icon="inline-end" />
               </Button>
             </div>
@@ -1658,6 +2037,6 @@ export default function App() {
         </DialogContent>
       </Dialog>
       <Toaster />
-    </TooltipProvider>
+    </>
   )
 }

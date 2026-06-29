@@ -16,7 +16,7 @@ Live site: https://pokedex-effektiv.vercel.app
 
 ## Language
 
-The interface is primarily German because the goal is quick lookup for German-speaking Pokemon players. The project metadata and documentation are English for public GitHub usage.
+The interface supports German and English. German is the default because the goal is quick lookup for German-speaking Pokemon players. The project metadata and documentation are English for public GitHub usage.
 
 ## Routes
 
