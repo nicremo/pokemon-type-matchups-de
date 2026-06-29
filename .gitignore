@@ -1,0 +1,10 @@
+.firecrawl/
+.playwright-mcp/
+.vercel/
+.DS_Store
+node_modules/
+dist/
+*.png
+*.log
+pokedex-shadcn-rebuild-*.md
+.vercel

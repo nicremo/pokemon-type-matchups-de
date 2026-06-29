@@ -1,0 +1,8 @@
+.firecrawl/
+.playwright-mcp/
+.vercel/
+node_modules/
+dist/
+*.log
+*.png
+pokedex-shadcn-rebuild-*.md
