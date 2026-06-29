@@ -20,7 +20,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -54,7 +53,6 @@ import {
 import {
   Field,
   FieldContent,
-  FieldDescription,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field"
@@ -713,10 +711,28 @@ function makeSuggestions(input: string, names: PokemonNameEntry[]): Suggestion[]
     }
   })
 
-  const deduped = new Map<number, PokemonNameEntry>()
+  const deduped = new Map<
+    number,
+    {
+      id: number
+      label: string
+      helper: string
+      score: number
+    }
+  >()
+
   for (const entry of names) {
-    if (!deduped.has(entry.id)) {
-      deduped.set(entry.id, entry)
+    const score = scoreText(normalized, entry.normalized)
+    const helper = entry.language === "de" ? "Pokémon" : "Pokemon"
+    const current = deduped.get(entry.id)
+
+    if (!current || score < current.score) {
+      deduped.set(entry.id, {
+        id: entry.id,
+        label: entry.name,
+        helper,
+        score,
+      })
     }
   }
 
@@ -724,9 +740,9 @@ function makeSuggestions(input: string, names: PokemonNameEntry[]): Suggestion[]
     .map((entry) => ({
       kind: "pokemon" as const,
       value: entry.id,
-      label: entry.name,
-      helper: entry.language === "de" ? "Pokémon, Deutsch" : "Pokémon, Englisch",
-      score: scoreText(normalized, entry.normalized),
+      label: entry.label,
+      helper: entry.helper,
+      score: entry.score,
     }))
     .filter((entry) => entry.score <= 4.5)
 
@@ -943,17 +959,11 @@ function MultiplierBadge({ value }: { value: number }) {
   return <Badge variant={variant}>{MULTIPLIER_COPY[value].label}</Badge>
 }
 
-function suggestionPath(suggestion: Suggestion) {
-  return suggestion.kind === "type"
-    ? typePath(suggestion.value)
-    : `/pokemon/${toPageSlug(suggestion.label)}`
-}
-
 function SuggestionIcon({ suggestion }: { suggestion: Suggestion }) {
   if (suggestion.kind === "type") {
     return (
       <span
-        className="flex size-10 shrink-0 items-center justify-center rounded-lg border"
+        className="flex size-8 shrink-0 items-center justify-center rounded-md border"
         style={{
           backgroundColor: TYPE_META[suggestion.value].color,
           color: TYPE_META[suggestion.value].foreground,
@@ -965,7 +975,7 @@ function SuggestionIcon({ suggestion }: { suggestion: Suggestion }) {
   }
 
   return (
-    <span className="flex size-10 shrink-0 items-center justify-center rounded-lg border bg-muted text-foreground">
+    <span className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-muted text-foreground">
       <SearchIcon />
     </span>
   )
@@ -1519,30 +1529,14 @@ export default function App() {
 
           <main className="grid gap-8">
             <Card className="search-card">
-              <CardHeader className="gap-2">
-                <CardTitle className="text-lg">Search by Pokemon or type</CardTitle>
-                <CardDescription>
-                  Tippe `f`, `stein`, `psychp`, `glurak` oder einen englischen Namen. Jeder Treffer hat eine eigene URL.
-                </CardDescription>
-                <CardAction>
-                  {namesLoading ? (
-                    <Badge variant="outline" className="gap-1">
-                      <LoaderCircleIcon className="animate-spin" />
-                      Index
-                    </Badge>
-                  ) : (
-                    <Badge variant="secondary">{names.length} Namen</Badge>
-                  )}
-                </CardAction>
+              <CardHeader>
+                <CardTitle className="text-lg">Direkte Suche</CardTitle>
               </CardHeader>
-              <CardContent className="grid gap-5">
+              <CardContent>
                 <FieldGroup>
                   <Field>
                     <FieldContent>
-                      <FieldLabel htmlFor="pokemon-search">Search</FieldLabel>
-                      <FieldDescription>
-                        Enter übernimmt den besten Treffer. Bei `psychp` wird `Psycho` gewählt.
-                      </FieldDescription>
+                      <FieldLabel htmlFor="pokemon-search" className="sr-only">Suche</FieldLabel>
                     </FieldContent>
                     <Command
                       shouldFilter={false}
@@ -1562,31 +1556,8 @@ export default function App() {
                       />
                       <CommandList>
                         <CommandEmpty>Kein Vorschlag gefunden.</CommandEmpty>
-                        <CommandGroup heading="Beste Treffer">
-                          {suggestions[0] && (
-                            <CommandItem
-                              className="suggestion-featured"
-                              key={`${suggestions[0].kind}-${suggestions[0].value}-featured`}
-                              value={`${suggestions[0].kind}-${suggestions[0].label}-featured`}
-                              onSelect={() => void runSearch(suggestions[0].label, suggestions[0])}
-                            >
-                              <SuggestionIcon suggestion={suggestions[0]} />
-                              <span className="grid min-w-0 flex-1 gap-1">
-                                <span className="flex flex-wrap items-center gap-2">
-                                  <span className="truncate text-base font-semibold">{suggestions[0].label}</span>
-                                  <Badge variant="secondary">
-                                    {suggestions[0].kind === "type" ? "Type" : "Pokemon"}
-                                  </Badge>
-                                </span>
-                                <span className="text-xs text-muted-foreground">{suggestions[0].helper}</span>
-                                <span className="truncate text-xs font-medium text-muted-foreground">
-                                  {suggestionPath(suggestions[0])}
-                                </span>
-                              </span>
-                              <Badge variant="outline" className="hidden sm:inline-flex">Enter</Badge>
-                            </CommandItem>
-                          )}
-                          {suggestions.slice(1).map((suggestion) => (
+                        <CommandGroup>
+                          {suggestions.map((suggestion) => (
                             <CommandItem
                               className="suggestion-row"
                               key={`${suggestion.kind}-${suggestion.value}`}
@@ -1596,11 +1567,8 @@ export default function App() {
                               <SuggestionIcon suggestion={suggestion} />
                               <span className="grid min-w-0 flex-1 gap-0.5">
                                 <span className="truncate font-medium">{suggestion.label}</span>
-                                <span className="truncate text-xs text-muted-foreground">{suggestion.helper}</span>
                               </span>
-                              <span className="hidden max-w-48 truncate text-xs font-medium text-muted-foreground md:block">
-                                {suggestionPath(suggestion)}
-                              </span>
+                              <Badge variant="secondary">{suggestion.helper}</Badge>
                             </CommandItem>
                           ))}
                         </CommandGroup>
@@ -1608,63 +1576,8 @@ export default function App() {
                     </Command>
                   </Field>
                 </FieldGroup>
-
-                <div className="grid gap-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-medium">Quick type pages</p>
-                    <span className="text-xs text-muted-foreground">Direkt als Unterseite</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {TYPE_ORDER.slice(0, 12).map((type) => (
-                      <Button
-                        key={type}
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="h-8"
-                        onClick={() => void runSearch(TYPE_META[type].label, {
-                          kind: "type",
-                          value: type,
-                          label: TYPE_META[type].label,
-                          helper: `Typ ${type}`,
-                          score: 0,
-                        })}
-                      >
-                        <ZapIcon data-icon="inline-start" />
-                        {TYPE_META[type].label}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="grid gap-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-medium">Fast checks</p>
-                    <span className="text-xs text-muted-foreground">Enter oder Klick</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {SAMPLE_SEARCHES.map((sample) => (
-                      <Button
-                        key={sample}
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => {
-                          setQuery(sample)
-                          void runSearch(sample)
-                        }}
-                      >
-                        <SparklesIcon data-icon="inline-start" />
-                        {sample}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
               </CardContent>
-              <CardFooter className="flex-wrap justify-between gap-4">
-                <div className="text-sm text-muted-foreground">
-                  Unterstützt Namen, Typen, deutsche Alias-Wörter und nahe Tippfehler. Treffer schreiben die URL direkt mit.
-                </div>
+              <CardFooter className="justify-end">
                 <Button disabled={loading} onClick={() => void runSearch(query, suggestions[0])}>
                   {loading ? <LoaderCircleIcon data-icon="inline-start" className="animate-spin" /> : <SearchIcon data-icon="inline-start" />}
                   Prüfen

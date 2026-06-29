@@ -142,8 +142,8 @@ body {
 }
 
 .search-command [data-slot="command-list"] {
-  max-height: 24rem;
-  padding-bottom: 0.375rem;
+  max-height: 18rem;
+  padding-bottom: 0.25rem;
 }
 
 .search-command [data-slot="command-group"] {
@@ -151,23 +151,11 @@ body {
 }
 
 .search-command [data-slot="command-item"] {
-  min-height: 3.25rem;
-  padding: 0.5rem 0.625rem;
-}
-
-.search-command .suggestion-featured {
-  min-height: 4.75rem;
-  border: 1px solid var(--border);
-  background: color-mix(in oklch, var(--muted) 60%, transparent);
-  padding: 0.75rem;
-}
-
-.search-command .suggestion-featured[data-selected="true"] {
-  background: color-mix(in oklch, var(--muted) 85%, transparent);
+  min-height: 2.875rem;
+  padding: 0.375rem 0.5rem;
 }
 
 .search-command .suggestion-row {
-  margin-top: 0.25rem;
   border: 1px solid transparent;
 }
 
