@@ -943,6 +943,34 @@ function MultiplierBadge({ value }: { value: number }) {
   return <Badge variant={variant}>{MULTIPLIER_COPY[value].label}</Badge>
 }
 
+function suggestionPath(suggestion: Suggestion) {
+  return suggestion.kind === "type"
+    ? typePath(suggestion.value)
+    : `/pokemon/${toPageSlug(suggestion.label)}`
+}
+
+function SuggestionIcon({ suggestion }: { suggestion: Suggestion }) {
+  if (suggestion.kind === "type") {
+    return (
+      <span
+        className="flex size-10 shrink-0 items-center justify-center rounded-lg border"
+        style={{
+          backgroundColor: TYPE_META[suggestion.value].color,
+          color: TYPE_META[suggestion.value].foreground,
+        }}
+      >
+        <ZapIcon />
+      </span>
+    )
+  }
+
+  return (
+    <span className="flex size-10 shrink-0 items-center justify-center rounded-lg border bg-muted text-foreground">
+      <SearchIcon />
+    </span>
+  )
+}
+
 function EffectivenessTable({ rows }: { rows: EffectivenessRow[] }) {
   return (
     <Table>
@@ -1535,24 +1563,44 @@ export default function App() {
                       <CommandList>
                         <CommandEmpty>Kein Vorschlag gefunden.</CommandEmpty>
                         <CommandGroup heading="Beste Treffer">
-                          {suggestions.map((suggestion) => (
+                          {suggestions[0] && (
                             <CommandItem
+                              className="suggestion-featured"
+                              key={`${suggestions[0].kind}-${suggestions[0].value}-featured`}
+                              value={`${suggestions[0].kind}-${suggestions[0].label}-featured`}
+                              onSelect={() => void runSearch(suggestions[0].label, suggestions[0])}
+                            >
+                              <SuggestionIcon suggestion={suggestions[0]} />
+                              <span className="grid min-w-0 flex-1 gap-1">
+                                <span className="flex flex-wrap items-center gap-2">
+                                  <span className="truncate text-base font-semibold">{suggestions[0].label}</span>
+                                  <Badge variant="secondary">
+                                    {suggestions[0].kind === "type" ? "Type" : "Pokemon"}
+                                  </Badge>
+                                </span>
+                                <span className="text-xs text-muted-foreground">{suggestions[0].helper}</span>
+                                <span className="truncate text-xs font-medium text-muted-foreground">
+                                  {suggestionPath(suggestions[0])}
+                                </span>
+                              </span>
+                              <Badge variant="outline" className="hidden sm:inline-flex">Enter</Badge>
+                            </CommandItem>
+                          )}
+                          {suggestions.slice(1).map((suggestion) => (
+                            <CommandItem
+                              className="suggestion-row"
                               key={`${suggestion.kind}-${suggestion.value}`}
                               value={`${suggestion.kind}-${suggestion.label}`}
                               onSelect={() => void runSearch(suggestion.label, suggestion)}
                             >
-                              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
-                                {suggestion.kind === "type" ? <ZapIcon /> : <SearchIcon />}
-                              </span>
+                              <SuggestionIcon suggestion={suggestion} />
                               <span className="grid min-w-0 flex-1 gap-0.5">
                                 <span className="truncate font-medium">{suggestion.label}</span>
-                                <span className="text-xs text-muted-foreground">{suggestion.helper}</span>
+                                <span className="truncate text-xs text-muted-foreground">{suggestion.helper}</span>
                               </span>
-                              <Badge variant="outline" className="ml-auto hidden sm:inline-flex">
-                                {suggestion.kind === "type"
-                                  ? typePath(suggestion.value)
-                                  : `/pokemon/${toPageSlug(suggestion.label)}`}
-                              </Badge>
+                              <span className="hidden max-w-48 truncate text-xs font-medium text-muted-foreground md:block">
+                                {suggestionPath(suggestion)}
+                              </span>
                             </CommandItem>
                           ))}
                         </CommandGroup>
